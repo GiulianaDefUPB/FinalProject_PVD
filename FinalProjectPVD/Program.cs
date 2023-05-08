@@ -1,9 +1,9 @@
 using Microsoft.OpenApi.Models;
+using UPB.CoreLogic.Managers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -17,6 +17,11 @@ var configurationBuilder = new ConfigurationBuilder()
         
 IConfiguration Configuration = configurationBuilder.Build();
 string siteTitle = Configuration.GetSection("Title").Value;
+string providersFilePath = Configuration.GetSection("Path:ProvidersFilePath").Value;
+
+
+builder.Services.AddTransient<ProviderManager>(_ => new ProviderManager(providersFilePath));
+
 
 builder.Services.AddSwaggerGen(options =>
 {
