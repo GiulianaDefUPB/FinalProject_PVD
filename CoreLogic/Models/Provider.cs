@@ -3,14 +3,14 @@ namespace UPB.CoreLogic.Models;
 
 public class Provider
 {
-    private string ID {get; set;}
-    private string Name {get; set;}
-    private string Address {get; set;}
-    private string Category {get; set;}
-    private int PhoneNumber {get; set;}
-    private int ContractRemainingDays {get; set;}
-    private  DateTime ContractExpirationDate {get; set;}
-    private bool ExpiredContract {get; set;}
-    private bool Enable {get; set;}
+    public string ID {get; set;}
+    public string Name {get; set;}
+    public string Address {get; set;}
+    public string Category {get; set;}
+    public int PhoneNumber {get; set;}
+    public int ContractRemainingDays {get; set;}
+    public  DateTime ContractExpirationDate {get; set;}
+    public bool ExpiredContract {get; set;}
+    public bool Enable {get; set;}
 
 }
