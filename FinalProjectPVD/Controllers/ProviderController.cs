@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using UPB.CoreLogic.Models;
+using UPB.CoreLogic.Managers;
 
 namespace UPB.FinalProjectPVD.Controllers;
 
@@ -7,8 +8,11 @@ namespace UPB.FinalProjectPVD.Controllers;
 [Route("[controller]")]
 public class ProviderController : ControllerBase
 {
-    public ProviderController()
+    private readonly ProviderManager _providerManager;
+
+    public ProviderController(ProviderManager providerManager)
     {
+        _providerManager = providerManager;
     }
 
     [HttpGet]
@@ -26,9 +30,9 @@ public class ProviderController : ControllerBase
     }
 
     [HttpPost]
-    public Provider Post()
+    public Provider Post([FromBody]Provider providerToCreate)
     {
-        return new Provider();
+        return _providerManager.Create(providerToCreate);
     }
 
     [HttpDelete]
