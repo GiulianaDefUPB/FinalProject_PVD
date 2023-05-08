@@ -14,7 +14,7 @@ public class ProviderManager
 
     public Provider Create(Provider providerToCreate)
     {
-         if (providerToCreate.ID < 0 
+        if (providerToCreate.ID < 0 
             || string.IsNullOrEmpty(providerToCreate.Name)
             || string.IsNullOrEmpty(providerToCreate.Address)
             || string.IsNullOrEmpty(providerToCreate.Category)
@@ -48,6 +48,23 @@ public class ProviderManager
         WriteProviderToFile(createdProvider);
 
         return createdProvider;
+    }
+
+    public Provider GetById(int id)
+    {
+        if (id < 0)
+        {
+            throw new Exception("Invalid ID");
+        }
+
+        Provider? providerToGet = ReadProviderFromFile(id);
+       
+        if (providerToGet == null)
+        {
+            throw new Exception("Provider not found");
+        }
+
+        return providerToGet;
     }
 
     public Provider? ReadProviderFromFile(int id)

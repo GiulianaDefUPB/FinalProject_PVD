@@ -19,7 +19,7 @@ public class ProviderController : ControllerBase
     [Route("{id}")]
     public Provider GetById([FromRoute] int id)
     {
-        return new Provider();
+        return _providerManager.GetById(id);
     }
 
     [HttpPut]
