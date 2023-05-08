@@ -3,6 +3,7 @@ namespace UPB.CoreLogic.Models;
 
 public class Provider
 {
+    private string ID {get; set;}
     private string Name {get; set;}
     private string Address {get; set;}
     private string Category {get; set;}
