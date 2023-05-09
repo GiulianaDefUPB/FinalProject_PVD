@@ -15,8 +15,7 @@ public class ProviderManager
 
     public Provider Create(Provider providerToCreate)
     {
-        if (providerToCreate.ID < 0 
-            || string.IsNullOrEmpty(providerToCreate.Name)
+        if (string.IsNullOrEmpty(providerToCreate.Name)
             || string.IsNullOrEmpty(providerToCreate.Address)
             || string.IsNullOrEmpty(providerToCreate.Category)
             || providerToCreate.PhoneNumber <= 0
@@ -40,7 +39,7 @@ public class ProviderManager
 
         Provider createdProvider = new Provider()
         {
-            ID = providerToCreate.ID,
+            ID = GenerateId(),
             Name = providerToCreate.Name,
             Address = providerToCreate.Address,
             Category = providerToCreate.Category,
@@ -211,5 +210,19 @@ public class ProviderManager
         File.WriteAllLines(_filePath, lst);  
 
         return foundProvider;
+    }
+
+    public int GenerateId ()
+    {
+        if (!File.Exists(_filePath))
+        {
+            return 1;
+        }
+
+        string lastLine = File.ReadLines(_filePath).Last();
+        string[] providerInfo = lastLine.Split(',');
+        int providerId = int.Parse(providerInfo[0]) + 1;
+
+        return providerId;
     }
 }
