@@ -70,6 +70,12 @@ public class ProviderManager
             throw new Exception("Provider not found");
         }
 
+        int remainingDays = (int)providerToGet.ContractExpirationDate.Subtract(DateTime.Today).TotalDays;
+        bool isExpired = remainingDays < 0;
+
+        providerToGet.ContractRemainingDays = remainingDays;
+        providerToGet.ExpiredContract = isExpired;
+
         return providerToGet;
     }
 
