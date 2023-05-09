@@ -24,9 +24,9 @@ public class ProviderController : ControllerBase
 
     [HttpPut]
     [Route("{id}")]
-    public Provider Put([FromRoute] int id)
+    public Provider Put([FromRoute] int id, [FromBody]Provider providerToUpdate)
     {
-        return new Provider();
+        return _providerManager.Update(id, providerToUpdate);
     }
 
     [HttpPost]
