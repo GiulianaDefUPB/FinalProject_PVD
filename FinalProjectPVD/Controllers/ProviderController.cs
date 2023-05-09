@@ -39,6 +39,6 @@ public class ProviderController : ControllerBase
     [Route("{id}")]
     public Provider Delete([FromRoute] int id)
     {
-        return new Provider();
+        return _providerManager.Delete(id);
     }
 }

@@ -67,6 +67,25 @@ public class ProviderManager
         return providerToGet;
     }
 
+    public Provider Delete(int id)
+    {
+        if (id < 0)
+        {
+            throw new Exception("Invalid ID");
+        }
+
+        Provider? providerToDelete = ReadProviderFromFile(id);
+
+        if (providerToDelete == null)
+        {
+            throw new Exception("Provider not found");
+        }
+
+        DeleteProviderFromFile(id);
+
+        return providerToDelete;
+    }
+
     public Provider? ReadProviderFromFile(int id)
     {
         if (!File.Exists(_filePath))
@@ -114,5 +133,11 @@ public class ProviderManager
         writer.WriteLine(line);
         writer.Close();
     }
-}
 
+    public void DeleteProviderFromFile(int id)
+    {
+        List<string> lst = File.ReadAllLines(_filePath).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToList();  
+        lst.RemoveAll(x => x.Split(',')[0].Equals(id.ToString()));  
+        File.WriteAllLines(_filePath, lst);
+    }
+}
