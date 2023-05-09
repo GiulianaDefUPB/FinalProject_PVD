@@ -22,7 +22,12 @@ public class ProviderManager
             || providerToCreate.PhoneNumber <= 0
             || providerToCreate.ContractExpirationDate == DateTime.MinValue)
         {
-            throw new Exception("Invalid input parameters.");
+            throw new Exception("Invalid input parameters");
+        }
+
+        if (providerToCreate.Category != "BASKET" && providerToCreate.Category != "SOCCER")
+        {
+            throw new Exception("Invalid category. Category can only be BASKET or SOCCER");
         }
 
         if (ReadProviderFromFile(providerToCreate.ID) != null)
@@ -96,7 +101,12 @@ public class ProviderManager
             || providerToUpdate.PhoneNumber <= 0
             || providerToUpdate.ContractExpirationDate == DateTime.MinValue)
         {
-            throw new Exception("Invalid input parameters.");
+            throw new Exception("Invalid input parameters");
+        }
+
+        if (providerToUpdate.Category != "BASKET" && providerToUpdate.Category != "SOCCER")
+        {
+            throw new Exception("Invalid category. Category can only be BASKET or SOCCER");
         }
 
         Provider? foundProvider = ReadProviderFromFile(id);
