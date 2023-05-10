@@ -1,5 +1,7 @@
 using System.Reflection;
 using UPB.CoreLogic.Models;
+using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 
 namespace UPB.CoreLogic.Managers;
 
@@ -7,10 +9,13 @@ public class ProviderManager
 {
 
     private readonly string _path;
+    private readonly string _backingService;
 
     public ProviderManager(string filePath)
     {
+        List<Provider> providers = new List<Provider>();
         _path = filePath;
+        _backingService = configuration.GetSection("BackingService").Value;
     }
 
     public Provider Enable(int id)
@@ -333,5 +338,24 @@ public class ProviderManager
         int providerId = int.Parse(providerInfo[0]) + 1;
 
         return providerId;
+    }
+
+    public async Task<List<Provider>> GetSearchProviders(HttpClient _httpProviders)
+    {
+        var response = await _httpProviders.GetAsync(_backingService);
+
+        response.EnsureSuccessStatusCode();
+
+        string json = await response.Content.ReadAsStringAsync();
+
+        List<SearchProviders> searchProviders = JsonSerializer.Deserialize<List<SearchProviders>>(json);
+        List<Provider> providers = new List<Provider>();
+
+        foreach (SearchProviders sp in searchProviders)
+        {
+            providers.Add(new Provider(sp.name,"", sp.address, "", sp.phone_number,""));
+        }
+
+        return providers;
     }
 }
