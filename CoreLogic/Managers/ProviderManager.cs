@@ -1,5 +1,6 @@
 using System.Reflection;
 using UPB.CoreLogic.Models;
+using System.Text.Json;
 
 namespace UPB.CoreLogic.Managers;
 
@@ -72,47 +73,31 @@ public class ProviderManager
         return (lst, index); 
     }
 
- public Provider? ReadProviderFromFile(int id)
+    public Provider? ReadProviderFromFile(int id)
     {
         ValidateIfFileExists();
 
-        StreamReader reader = new StreamReader(_path);
-
-        string? line = reader.ReadLine();
-        while (line != null)
+        string json = File.ReadAllText(_path);
+        if (!string.IsNullOrEmpty(json))
         {
-            string[] providerInfo = line.Split(',');
-            int providerId = int.Parse(providerInfo[0]);
+            List<Provider>? providers = JsonSerializer.Deserialize<List<Provider>>(json);
 
-            if (providerId == id)
+            if (providers != null)
             {
-                reader.Close();
-                Provider foundProvider = new Provider()
-                {
-                    ID = providerId,
-                    Name = providerInfo[1],
-                    Address = providerInfo[2],
-                    Category = providerInfo[3],
-                    PhoneNumber = int.Parse(providerInfo[4]),
-                    ContractRemainingDays = int.Parse(providerInfo[5]),
-                    ContractExpirationDate = DateTime.Parse(providerInfo[6]),
-                    ExpiredContract = Boolean.Parse(providerInfo[7]),
-                    Enable = Boolean.Parse(providerInfo[8])
-                };
+                Provider? foundProvider = providers.Find(provider => provider.ID == id);
                 return foundProvider;
             }
-
-            line = reader.ReadLine();
         }
 
-        reader.Close();
         return null;
     }
-     private void ValidateIfFileExists()
+
+    private void ValidateIfFileExists()
     {
         if (!File.Exists(_path))
         {
-            throw new FileNotFoundException("Empty database.");
+            using var streamWriter = File.CreateText(_path);
+            streamWriter.WriteLine("[]"); // Add an empty array as the default content
         }
     }
 
@@ -233,10 +218,22 @@ public class ProviderManager
 
     public void WriteProviderToFile(Provider provider)
     {
-        StreamWriter writer = new StreamWriter(_path, true);
-        string line = $"{provider.ID},{provider.Name},{provider.Address},{provider.Category},{provider.PhoneNumber},{provider.ContractRemainingDays},{provider.ContractExpirationDate},{provider.ExpiredContract},{provider.Enable}";
-        writer.WriteLine(line);
-        writer.Close();
+        ValidateIfFileExists();
+
+        List<Provider>? providers = new List<Provider>();
+        string json = File.ReadAllText(_path);
+
+        if (!string.IsNullOrEmpty(json))
+        {
+            providers = JsonSerializer.Deserialize<List<Provider>>(json);
+        }
+
+        if (providers != null)
+        {
+            providers.Add(provider);
+            json = JsonSerializer.Serialize(providers);
+            File.WriteAllText(_path, json);
+        }
     }
 
     public void DeleteProviderFromFile(int id)
@@ -278,15 +275,20 @@ public class ProviderManager
 
     public int GenerateId ()
     {
-        if (!File.Exists(_path))
+        int newId = 1;
+
+        if (File.Exists(_path))
         {
-            return 1;
+            string json = File.ReadAllText(_path);
+            if (!string.IsNullOrEmpty(json))
+            {
+                List<Provider>? providers = JsonSerializer.Deserialize<List<Provider>>(json);
+                if (providers != null && providers.Count > 0)
+                {
+                    newId = providers.Max(provider => provider.ID) + 1;
+                }
+            }
         }
-
-        string lastLine = File.ReadLines(_path).Last();
-        string[] providerInfo = lastLine.Split(',');
-        int providerId = int.Parse(providerInfo[0]) + 1;
-
-        return providerId;
+        return newId;
     }
 }
