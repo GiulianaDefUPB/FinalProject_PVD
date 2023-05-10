@@ -23,6 +23,12 @@ public class ProviderController : ControllerBase
         return _providerManager.GetById(id);
     }
 
+    [HttpGet]
+    public List<Provider> Get()
+    {
+        return _providerManager.Get(Request.Headers["ListType"]);
+    }
+
     [HttpPut]
     [Route("{id}")]
     public Provider Put([FromRoute] int id, [FromBody]Provider providerToUpdate)

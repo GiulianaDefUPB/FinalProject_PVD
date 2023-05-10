@@ -185,6 +185,51 @@ public class ProviderManager
         return providerToGet;
     }
 
+    public List<Provider> Get(string listType)
+    {
+        ValidateIfFileExists();
+        int option = 0;
+        List<Provider> providers = new List<Provider>();
+
+        if (listType.Equals("all") || listType.Equals("null"))
+            option = 1;
+        else if (listType.Equals("only-enable"))
+            option = 2;
+        else
+            throw new Exception("Invalid header parameter");
+
+        StreamReader reader = new StreamReader(_path);
+
+        string? line = reader.ReadLine();
+
+        while (line != null)
+        {
+            string[] providerInfo = line.Split(',');
+            
+            if (option == 1 || (option == 2 && Boolean.Parse(providerInfo[8])))
+            {
+                Provider provider = new Provider()
+                {
+                    ID = int.Parse(providerInfo[0]),
+                    Name = providerInfo[1],
+                    Address = providerInfo[2],
+                    Category = providerInfo[3],
+                    PhoneNumber = int.Parse(providerInfo[4]),
+                    ContractRemainingDays = int.Parse(providerInfo[5]),
+                    ContractExpirationDate = DateTime.Parse(providerInfo[6]),
+                    ExpiredContract = Boolean.Parse(providerInfo[7]),
+                    Enable = Boolean.Parse(providerInfo[8])
+                };  
+                
+                providers.Add(provider);
+            }
+
+            line = reader.ReadLine();
+        }
+
+        reader.Close();
+        return providers;
+    }
     public Provider Delete(int id)
     {
         ValidateId(id);
