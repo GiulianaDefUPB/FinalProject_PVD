@@ -149,48 +149,29 @@ public class ProviderManager
     public List<Provider> Get(string listType)
     {
         ValidateIfFileExists();
-        int option = 0;
-        List<Provider> providers = new List<Provider>();
 
-        if (listType == null || listType.Equals("all") || listType.Equals("null"))
+        int option = 0;
+
+        if (listType == null ||
+            listType.Equals("all", StringComparison.OrdinalIgnoreCase) ||
+            listType.Equals("null", StringComparison.OrdinalIgnoreCase))
             option = 1;
-        else if (listType.Equals("only-enable"))
+        else if (listType.Equals("only-enable", StringComparison.OrdinalIgnoreCase))
             option = 2;
         else
-            throw new Exception("Invalid header parameter");
+            throw new Exception("Invalid header parameter.");
 
-        StreamReader reader = new StreamReader(_path);
+        List<Provider> providers = new List<Provider>();
+        string json = File.ReadAllText(_path);
 
-        string? line = reader.ReadLine();
+        providers = JsonSerializer.Deserialize<List<Provider>>(json);
 
-        while (line != null)
-        {
-            string[] providerInfo = line.Split(',');
-            
-            if (option == 1 || (option == 2 && Boolean.Parse(providerInfo[8])))
-            {
-                Provider provider = new Provider()
-                {
-                    ID = int.Parse(providerInfo[0]),
-                    Name = providerInfo[1],
-                    Address = providerInfo[2],
-                    Category = providerInfo[3],
-                    PhoneNumber = int.Parse(providerInfo[4]),
-                    ContractRemainingDays = int.Parse(providerInfo[5]),
-                    ContractExpirationDate = DateTime.Parse(providerInfo[6]),
-                    ExpiredContract = Boolean.Parse(providerInfo[7]),
-                    Enable = Boolean.Parse(providerInfo[8])
-                };  
-                
-                providers.Add(provider);
-            }
-
-            line = reader.ReadLine();
-        }
-
-        reader.Close();
-        return providers;
+        if (option == 1)
+            return providers;
+        else
+            return providers.Where(provider => provider.Enable).ToList();
     }
+
     public Provider Delete(int id)
     {
         ValidateId(id);
