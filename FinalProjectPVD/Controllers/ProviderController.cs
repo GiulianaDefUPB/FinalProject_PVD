@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using UPB.CoreLogic.Models;
 using UPB.CoreLogic.Managers;
 
-
 namespace UPB.FinalProjectPVD.Controllers;
 
 [ApiController]
@@ -26,7 +25,17 @@ public class ProviderController : ControllerBase
     [HttpGet]
     public List<Provider> Get()
     {
-        return _providerManager.Get(Request.Headers["ListType"]);
+        if (Request.Headers.ContainsKey("ListType"))
+        {
+            string headerValue = Request.Headers["ListType"];
+    
+            if (string.IsNullOrEmpty(headerValue))
+                return _providerManager.Get(null);
+            else
+                return _providerManager.Get(Request.Headers["ListType"]);
+        }
+        else
+            return _providerManager.Get(null);
     }
 
     [HttpPut]
