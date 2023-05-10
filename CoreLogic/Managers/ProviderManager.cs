@@ -191,7 +191,7 @@ public class ProviderManager
         int option = 0;
         List<Provider> providers = new List<Provider>();
 
-        if (listType.Equals("all") || listType.Equals("null"))
+        if (listType == null || listType.Equals("all") || listType.Equals("null"))
             option = 1;
         else if (listType.Equals("only-enable"))
             option = 2;
