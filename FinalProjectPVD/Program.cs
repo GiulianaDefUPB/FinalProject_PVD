@@ -1,5 +1,6 @@
 using Microsoft.OpenApi.Models;
 using UPB.CoreLogic.Managers;
+using UPB.FinalProjectPVD.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+app.UseGlobalExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "QA" || app.Environment.EnvironmentName == "UAT")
