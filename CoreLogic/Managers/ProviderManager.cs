@@ -253,30 +253,31 @@ public class ProviderManager
 
     public Provider UpdateProviderToFile(int id, Provider providerToUpdate, Provider foundProvider)
     {
-        List<string> lst = File.ReadAllLines(_path).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToList();  
-        int index = lst.FindIndex(x => x.Split(',')[0].Equals(id.ToString())); 
-        
-        List<String> patientData = new List<string>();
-        
-        foreach (PropertyInfo property in foundProvider.GetType().GetProperties())
+        string json = File.ReadAllText(_path);
+        List<Provider>? providers = JsonSerializer.Deserialize<List<Provider>>(json);
+
+        if (providers != null)
         {
-            patientData.Add(property.GetValue(foundProvider).ToString());
+            int index = providers.FindIndex(provider => provider.ID == id);
+
+            if (index != -1)
+            {
+                int remainingDays = (int)providerToUpdate.ContractExpirationDate.Subtract(DateTime.Today).TotalDays;
+                bool isExpired = remainingDays < 0;
+
+                foundProvider.Name = providerToUpdate.Name;
+                foundProvider.Address = providerToUpdate.Address;
+                foundProvider.Category = providerToUpdate.Category;
+                foundProvider.PhoneNumber = providerToUpdate.PhoneNumber;
+                foundProvider.ContractRemainingDays = remainingDays;
+                foundProvider.ContractExpirationDate = providerToUpdate.ContractExpirationDate;
+                foundProvider.ExpiredContract = isExpired;
+
+                providers[index] = foundProvider;
+                json = JsonSerializer.Serialize(providers);
+                File.WriteAllText(_path, json);
+            }
         }
-
-        int remainingDays = (int)providerToUpdate.ContractExpirationDate.Subtract(DateTime.Today).TotalDays;
-        bool isExpired = remainingDays < 0;
-
-        foundProvider.Name = providerToUpdate.Name;
-        foundProvider.Address = providerToUpdate.Address;
-        foundProvider.Category = providerToUpdate.Category;
-        foundProvider.PhoneNumber = providerToUpdate.PhoneNumber;
-        foundProvider.ContractRemainingDays = remainingDays;
-        foundProvider.ContractExpirationDate =  providerToUpdate.ContractExpirationDate;
-        foundProvider.ExpiredContract = isExpired;
-
-        string rawData = $"{foundProvider.ID},{foundProvider.Name},{foundProvider.Address},{foundProvider.Category},{foundProvider.PhoneNumber},{foundProvider.ContractRemainingDays},{foundProvider.ContractExpirationDate},{foundProvider.ExpiredContract},{foundProvider.Enable}";
-        lst[index] = rawData;
-        File.WriteAllLines(_path, lst);  
 
         return foundProvider;
     }
