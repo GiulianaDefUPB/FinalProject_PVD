@@ -6,7 +6,6 @@ namespace UPB.CoreLogic.Managers;
 
 public class ProviderManager
 {
-
     private readonly string _path;
 
     public ProviderManager(string filePath)
@@ -73,7 +72,7 @@ public class ProviderManager
         return (lst, index); 
     }
 
-    public Provider? ReadProviderFromFile(int id)
+    private Provider? ReadProviderFromFile(int id)
     {
         ValidateIfFileExists();
 
@@ -216,7 +215,7 @@ public class ProviderManager
         return updatedProvider;
     }
 
-    public void WriteProviderToFile(Provider provider)
+    private void WriteProviderToFile(Provider provider)
     {
         ValidateIfFileExists();
 
@@ -236,7 +235,7 @@ public class ProviderManager
         }
     }
 
-    public void DeleteProviderFromFile(int id)
+    private void DeleteProviderFromFile(int id)
     {
         ValidateIfFileExists();
 
@@ -251,7 +250,7 @@ public class ProviderManager
         }
     }
 
-    public Provider UpdateProviderToFile(int id, Provider providerToUpdate, Provider foundProvider)
+    private Provider UpdateProviderToFile(int id, Provider providerToUpdate, Provider foundProvider)
     {
         string json = File.ReadAllText(_path);
         List<Provider>? providers = JsonSerializer.Deserialize<List<Provider>>(json);
@@ -282,7 +281,7 @@ public class ProviderManager
         return foundProvider;
     }
 
-    public int GenerateId ()
+    private int GenerateId ()
     {
         int newId = 1;
 
