@@ -238,9 +238,17 @@ public class ProviderManager
 
     public void DeleteProviderFromFile(int id)
     {
-        List<string> lst = File.ReadAllLines(_path).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToList();  
-        lst.RemoveAll(x => x.Split(',')[0].Equals(id.ToString()));  
-        File.WriteAllLines(_path, lst);
+        ValidateIfFileExists();
+
+        string json = File.ReadAllText(_path);
+        List<Provider>? providers = JsonSerializer.Deserialize<List<Provider>>(json);
+
+        if (providers != null)
+        {
+            providers.RemoveAll(provider => provider.ID == id);
+            json = JsonSerializer.Serialize(providers);
+            File.WriteAllText(_path, json);
+        }
     }
 
     public Provider UpdateProviderToFile(int id, Provider providerToUpdate, Provider foundProvider)
