@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace UPB.CoreLogic.Models;
 
 public class Provider
@@ -10,5 +12,6 @@ public class Provider
     public int ContractRemainingDays {get; set;}
     public  DateTime ContractExpirationDate {get; set;}
     public bool ExpiredContract {get; set;}
-    public bool Enable {get; set;}
+    [DefaultValue(false)]
+    public bool Enable {get; set;} = false;
 }

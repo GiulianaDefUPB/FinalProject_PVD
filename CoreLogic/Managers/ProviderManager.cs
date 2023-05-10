@@ -3,14 +3,125 @@ using UPB.CoreLogic.Models;
 
 namespace UPB.CoreLogic.Managers;
 
-
 public class ProviderManager
 {
-    private string _filePath;
 
-    public ProviderManager()
+    private readonly string _path;
+
+    public ProviderManager(string filePath)
     {
-        _filePath = "./providers.txt";
+        _path = filePath;
+    }
+
+    public Provider Enable(int id)
+    {
+        return UpdateProviderStatus(id, true);
+    }
+
+    public Provider Disable(int id)
+    {
+        return UpdateProviderStatus(id, false);
+    }
+
+    private Provider UpdateProviderStatus(int id, bool enable)
+    {
+        ValidateId(id);
+
+        Provider provider = ReadProviderFromFile(id);
+        if (provider == null)
+        {
+            throw new Exception($"Provider with ID {id} not found.");
+        }
+
+        var (lineList, index) = GetFileLine(id);
+
+        Dictionary<int, string> newProperties = new Dictionary<int, string>()
+        {
+            {8, enable ? "true" : "false" }
+        };
+
+        List<string> patientData = ModifyArrayData(provider, newProperties);
+
+        string rawData = string.Join(",", patientData);
+        lineList[index] = rawData;
+        File.WriteAllLines(_path, lineList);
+
+        provider.Enable = enable;
+        return provider;
+    }
+
+    private List<string> ModifyArrayData(Provider provider, Dictionary<int, string> newProperties)
+    {
+        List<string> patientData = provider.GetType()
+            .GetProperties()
+            .Select(property => property.GetValue(provider).ToString())
+            .ToList();
+
+        foreach ((int index, string property) in newProperties)
+        {
+            patientData[index] = property;
+        }
+
+        return patientData;
+    }
+
+    private (List<string>, int) GetFileLine(int id)
+    {
+        List<string> lst = File.ReadAllLines(_path).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToList();  
+        int index = lst.FindIndex(x => x.Split(',')[0].Equals(id.ToString()));
+        return (lst, index); 
+    }
+
+ public Provider? ReadProviderFromFile(int id)
+    {
+        ValidateIfFileExists();
+
+        StreamReader reader = new StreamReader(_path);
+
+        string? line = reader.ReadLine();
+        while (line != null)
+        {
+            string[] providerInfo = line.Split(',');
+            int providerId = int.Parse(providerInfo[0]);
+
+            if (providerId == id)
+            {
+                reader.Close();
+                Provider foundProvider = new Provider()
+                {
+                    ID = providerId,
+                    Name = providerInfo[1],
+                    Address = providerInfo[2],
+                    Category = providerInfo[3],
+                    PhoneNumber = int.Parse(providerInfo[4]),
+                    ContractRemainingDays = int.Parse(providerInfo[5]),
+                    ContractExpirationDate = DateTime.Parse(providerInfo[6]),
+                    ExpiredContract = Boolean.Parse(providerInfo[7]),
+                    Enable = Boolean.Parse(providerInfo[8])
+                };
+                return foundProvider;
+            }
+
+            line = reader.ReadLine();
+        }
+
+        reader.Close();
+        return null;
+    }
+     private void ValidateIfFileExists()
+    {
+        if (!File.Exists(_path))
+        {
+            throw new FileNotFoundException("Empty database.");
+        }
+    }
+
+    private void ValidateId(int id)
+    {
+        if (id < 0)
+        {
+            throw new ArgumentException($"Invalid ID: {id}");
+        }
     }
 
     public Provider Create(Provider providerToCreate)
@@ -46,8 +157,7 @@ public class ProviderManager
             PhoneNumber = providerToCreate.PhoneNumber,
             ContractRemainingDays = remainingDays,
             ContractExpirationDate =  providerToCreate.ContractExpirationDate,
-            ExpiredContract = isExpired,
-            Enable = providerToCreate.Enable
+            ExpiredContract = isExpired
         };
         
         WriteProviderToFile(createdProvider);
@@ -57,10 +167,7 @@ public class ProviderManager
 
     public Provider GetById(int id)
     {
-        if (id < 0)
-        {
-            throw new Exception("Invalid ID");
-        }
+        ValidateId(id);
 
         Provider? providerToGet = ReadProviderFromFile(id);
        
@@ -80,10 +187,7 @@ public class ProviderManager
 
     public Provider Delete(int id)
     {
-        if (id < 0)
-        {
-            throw new Exception("Invalid ID");
-        }
+        ValidateId(id);
 
         Provider? providerToDelete = ReadProviderFromFile(id);
 
@@ -99,8 +203,9 @@ public class ProviderManager
 
     public Provider Update(int id, Provider providerToUpdate)
     {
-        if (providerToUpdate.ID < 0 
-            || string.IsNullOrEmpty(providerToUpdate.Name)
+        ValidateId(id);
+        
+        if (string.IsNullOrEmpty(providerToUpdate.Name)
             || string.IsNullOrEmpty(providerToUpdate.Address)
             || string.IsNullOrEmpty(providerToUpdate.Category)
             || providerToUpdate.PhoneNumber <= 0
@@ -126,49 +231,9 @@ public class ProviderManager
         return updatedProvider;
     }
 
-    public Provider? ReadProviderFromFile(int id)
-    {
-        if (!File.Exists(_filePath))
-        {
-            return null;
-        }
-
-        StreamReader reader = new StreamReader(_filePath);
-
-        string? line = reader.ReadLine();
-        while (line != null)
-        {
-            string[] providerInfo = line.Split(',');
-            int providerId = int.Parse(providerInfo[0]);
-
-            if (providerId == id)
-            {
-                reader.Close();
-                Provider foundProvider = new Provider()
-                {
-                    ID = providerId,
-                    Name = providerInfo[1],
-                    Address = providerInfo[2],
-                    Category = providerInfo[3],
-                    PhoneNumber = int.Parse(providerInfo[4]),
-                    ContractRemainingDays = int.Parse(providerInfo[5]),
-                    ContractExpirationDate = DateTime.Parse(providerInfo[6]),
-                    ExpiredContract = Boolean.Parse(providerInfo[7]),
-                    Enable = Boolean.Parse(providerInfo[8])
-                };
-                return foundProvider;
-            }
-
-            line = reader.ReadLine();
-        }
-
-        reader.Close();
-        return null;
-    }
-
     public void WriteProviderToFile(Provider provider)
     {
-        StreamWriter writer = new StreamWriter(_filePath, true);
+        StreamWriter writer = new StreamWriter(_path, true);
         string line = $"{provider.ID},{provider.Name},{provider.Address},{provider.Category},{provider.PhoneNumber},{provider.ContractRemainingDays},{provider.ContractExpirationDate},{provider.ExpiredContract},{provider.Enable}";
         writer.WriteLine(line);
         writer.Close();
@@ -176,14 +241,14 @@ public class ProviderManager
 
     public void DeleteProviderFromFile(int id)
     {
-        List<string> lst = File.ReadAllLines(_filePath).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToList();  
+        List<string> lst = File.ReadAllLines(_path).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToList();  
         lst.RemoveAll(x => x.Split(',')[0].Equals(id.ToString()));  
-        File.WriteAllLines(_filePath, lst);
+        File.WriteAllLines(_path, lst);
     }
 
     public Provider UpdateProviderToFile(int id, Provider providerToUpdate, Provider foundProvider)
     {
-        List<string> lst = File.ReadAllLines(_filePath).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToList();  
+        List<string> lst = File.ReadAllLines(_path).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToList();  
         int index = lst.FindIndex(x => x.Split(',')[0].Equals(id.ToString())); 
         
         List<String> patientData = new List<string>();
@@ -203,23 +268,22 @@ public class ProviderManager
         foundProvider.ContractRemainingDays = remainingDays;
         foundProvider.ContractExpirationDate =  providerToUpdate.ContractExpirationDate;
         foundProvider.ExpiredContract = isExpired;
-        foundProvider.Enable = providerToUpdate.Enable;
 
         string rawData = $"{foundProvider.ID},{foundProvider.Name},{foundProvider.Address},{foundProvider.Category},{foundProvider.PhoneNumber},{foundProvider.ContractRemainingDays},{foundProvider.ContractExpirationDate},{foundProvider.ExpiredContract},{foundProvider.Enable}";
         lst[index] = rawData;
-        File.WriteAllLines(_filePath, lst);  
+        File.WriteAllLines(_path, lst);  
 
         return foundProvider;
     }
 
     public int GenerateId ()
     {
-        if (!File.Exists(_filePath))
+        if (!File.Exists(_path))
         {
             return 1;
         }
 
-        string lastLine = File.ReadLines(_filePath).Last();
+        string lastLine = File.ReadLines(_path).Last();
         string[] providerInfo = lastLine.Split(',');
         int providerId = int.Parse(providerInfo[0]) + 1;
 
