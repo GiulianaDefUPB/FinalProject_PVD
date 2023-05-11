@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" Version="7.0.0-dev-00302" />
     <ProjectReference Include="../CoreLogic/CoreLogic.csproj" />
   </ItemGroup>
 

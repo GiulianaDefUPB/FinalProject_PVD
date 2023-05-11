@@ -1,8 +1,11 @@
 using Microsoft.OpenApi.Models;
 using UPB.CoreLogic.Managers;
 using UPB.FinalProjectPVD.Middlewares;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -25,6 +28,12 @@ string backingService = Configuration.GetSection("BackingService").Value;
 builder.Services.AddTransient<ProviderManager>(_ => new ProviderManager(providersFilePath, backingService));
 
 
+// Create the logger and setup your sinks, filters and properties
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(Configuration)
+    .CreateLogger();
+
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -35,8 +44,11 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
-app.UseGlobalExceptionHandler();
 
+// Log application environment
+Log.Information("Application running in {Environment} environment", builder.Environment.EnvironmentName);
+
+app.UseGlobalExceptionHandler(Log.Logger);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "QA" || app.Environment.EnvironmentName == "UAT")
 {

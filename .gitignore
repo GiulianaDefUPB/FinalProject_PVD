@@ -94,3 +94,6 @@ $RECYCLE.BIN/
 
 # Providers file
 Providers*.json
+
+# Log files
+*.log
