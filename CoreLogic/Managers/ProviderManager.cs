@@ -90,7 +90,7 @@ public class ProviderManager
          if (string.IsNullOrEmpty(providerToCreate.Name)
             || string.IsNullOrEmpty(providerToCreate.Address)
             || string.IsNullOrEmpty(providerToCreate.Category)
-            || providerToCreate.PhoneNumber <= 0
+            || string.IsNullOrEmpty(providerToCreate.PhoneNumber)
             || providerToCreate.ContractExpirationDate == DateTime.MinValue)
         {
             throw new Exception("Invalid input parameters");
@@ -195,7 +195,7 @@ public class ProviderManager
         if (string.IsNullOrEmpty(providerToUpdate.Name)
             || string.IsNullOrEmpty(providerToUpdate.Address)
             || string.IsNullOrEmpty(providerToUpdate.Category)
-            || providerToUpdate.PhoneNumber <= 0
+            ||  string.IsNullOrEmpty(providerToUpdate.PhoneNumber)
             || providerToUpdate.ContractExpirationDate == DateTime.MinValue)
         {
             throw new Exception("Invalid input parameters");
@@ -292,5 +292,5 @@ public class ProviderManager
             }
         }
         return newId;
-    }
+   }
 }

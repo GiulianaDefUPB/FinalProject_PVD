@@ -1,14 +1,18 @@
 using System.Globalization;
+using System.Net;
+using System.Text.Json;
 
 namespace UPB.FinalProjectPVD.Middlewares;
 
 public class ExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionHandlerMiddleware> _logger;
 
-    public ExceptionHandlerMiddleware(RequestDelegate next)
+    public ExceptionHandlerMiddleware(RequestDelegate next, ILogger<ExceptionHandlerMiddleware> logger)
     {
         _next = next;
+        _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -20,17 +24,19 @@ public class ExceptionHandlerMiddleware
         }
         catch (System.Exception ex)
         {
-            // Log ex.Message
-            HandleException(context, ex);
+            _logger.LogError(ex, "An error occurred while processing the request: {Message}", ex.Message);
+            await HandleException(context, ex);
         }
 
     }
 
     private static Task HandleException(HttpContext context, Exception ex)
     {
-        context.Response.ContentType = "text/json";
-        // context.Response.StatusCode = 500;
-        return context.Response.WriteAsync("Error: " + ex.Message);
+        var response = new { error = ex.Message };
+        var json = JsonSerializer.Serialize(response);
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+        return context.Response.WriteAsync(json);
     }
 }
 

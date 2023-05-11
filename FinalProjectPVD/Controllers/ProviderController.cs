@@ -9,10 +9,12 @@ namespace UPB.FinalProjectPVD.Controllers;
 public class ProviderController : ControllerBase
 {
     private readonly ProviderManager _providerManager;
+    private readonly HttpClient _httpClient;
 
-    public ProviderController(ProviderManager providerManager)
+    public ProviderController(ProviderManager providerManager, HttpClient httpClient)
     {
         _providerManager = providerManager;
+        _httpClient = httpClient;
     }
 
     [HttpGet]
