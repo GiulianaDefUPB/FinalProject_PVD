@@ -338,9 +338,9 @@ public class ProviderManager
         return providerId;
     }
 
-    public async Task<List<Provider>> GetSearchProviders(HttpClient _httpProviders)
+    public async Task<List<Provider>> GetSearchProviders(HttpClient httpProviders)
     {
-        var response = await _httpProviders.GetAsync(_backingService);
+        var response = await httpProviders.GetAsync(_backingService);
 
         response.EnsureSuccessStatusCode();
 
