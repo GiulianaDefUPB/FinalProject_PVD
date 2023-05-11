@@ -23,7 +23,8 @@ IConfiguration Configuration = configurationBuilder.Build();
 string siteTitle = Configuration.GetSection("Title").Value;
 
 // Create the logger and setup your sinks, filters and properties
-Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(Configuration)
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(Configuration)
     .CreateLogger();
 
 
