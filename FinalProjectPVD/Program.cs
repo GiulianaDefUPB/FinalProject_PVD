@@ -1,11 +1,6 @@
 using Microsoft.OpenApi.Models;
 using serilog;
 
-// Create the logger and setup your sinks, filters and properties
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .CreateBootstrapLogger();
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -25,6 +20,12 @@ var configurationBuilder = new ConfigurationBuilder()
         
 IConfiguration Configuration = configurationBuilder.Build();
 string siteTitle = Configuration.GetSection("Title").Value;
+
+// Create the logger and setup your sinks, filters and properties
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(Configuration)
+    .CreateLogger();
+
 
 builder.Services.AddSwaggerGen(options =>
 {
