@@ -10,10 +10,12 @@ namespace UPB.FinalProjectPVD.Controllers;
 public class ProviderController : ControllerBase
 {
     private readonly ProviderManager _providerManager;
+    private readonly HttpClient _httpClient;
 
-    public ProviderController(ProviderManager providerManager)
+    public ProviderController(ProviderManager providerManager, HttpClient httpClient)
     {
         _providerManager = providerManager;
+        _httpClient = httpClient;
     }
 
     [HttpGet]
@@ -61,5 +63,12 @@ public class ProviderController : ControllerBase
     public Provider Disable([FromRoute] int id)
     {
         return _providerManager.Disable(id);
+    }
+
+    [HttpGet]
+    [Route("search-providers")]
+    public Task<List<Provider>> GetSearchProviders()
+    {
+        return _providerManager.GetSearchProviders(_httpClient);
     }
 }
