@@ -1,5 +1,5 @@
 using Microsoft.OpenApi.Models;
-using FinalProjectPVD.Middlewares;
+using UPB.FinalProjectPVD.Middlewares;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);

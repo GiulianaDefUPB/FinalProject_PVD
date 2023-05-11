@@ -1,7 +1,7 @@
 using System.Globalization;
 using Serilog;
 
-namespace FinalProjectPVD.Middlewares;
+namespace UPB.FinalProjectPVD.Middlewares;
 
 public class ExceptionHandlerMiddleware
 {
