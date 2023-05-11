@@ -1,6 +1,8 @@
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,dotnetcore,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,dotnetcore,visualstudiocode
 
+
+*.txt
 ### DotnetCore ###
 # .NET Core build folders
 bin/
@@ -89,3 +91,9 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,dotnetcore,visualstudiocode
+
+# Providers file
+Providers*.json
+
+# Log files
+*.log
