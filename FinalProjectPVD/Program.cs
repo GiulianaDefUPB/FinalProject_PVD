@@ -1,8 +1,10 @@
 using Microsoft.OpenApi.Models;
 using FinalProjectPVD.Middlewares;
-using serilog;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 
@@ -10,8 +12,6 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Host.UseSerilog();
 
 var configurationBuilder = new ConfigurationBuilder()
         .SetBasePath(builder.Environment.ContentRootPath)
@@ -23,8 +23,7 @@ IConfiguration Configuration = configurationBuilder.Build();
 string siteTitle = Configuration.GetSection("Title").Value;
 
 // Create the logger and setup your sinks, filters and properties
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(Configuration)
+Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(Configuration)
     .CreateLogger();
 
 
