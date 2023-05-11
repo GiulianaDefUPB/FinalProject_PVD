@@ -48,6 +48,7 @@ if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "QA" |
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseGlobalExceptionHandler(Log.Logger);
 
 app.UseHttpsRedirection();
 
