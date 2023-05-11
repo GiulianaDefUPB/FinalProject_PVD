@@ -19,9 +19,9 @@ var configurationBuilder = new ConfigurationBuilder()
 IConfiguration Configuration = configurationBuilder.Build();
 string siteTitle = Configuration.GetSection("Title").Value;
 string providersFilePath = Configuration.GetSection("Path:ProvidersFilePath").Value;
+string backingService = Configuration.GetSection("BackingService").Value;
 
-
-builder.Services.AddTransient<ProviderManager>(_ => new ProviderManager(providersFilePath));
+builder.Services.AddTransient<ProviderManager>(_ => new ProviderManager(providersFilePath, backingService));
 
 
 builder.Services.AddSwaggerGen(options =>

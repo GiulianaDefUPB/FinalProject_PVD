@@ -1,6 +1,5 @@
 using System.Reflection;
 using UPB.CoreLogic.Models;
-using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 
 namespace UPB.CoreLogic.Managers;
@@ -11,11 +10,10 @@ public class ProviderManager
     private readonly string _path;
     private readonly string _backingService;
 
-    public ProviderManager(string filePath)
+    public ProviderManager(string filePath, string backingService)
     {
-        List<Provider> providers = new List<Provider>();
         _path = filePath;
-        _backingService = configuration.GetSection("BackingService").Value;
+        _backingService = backingService;
     }
 
     public Provider Enable(int id)
