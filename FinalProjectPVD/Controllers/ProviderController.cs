@@ -73,4 +73,11 @@ public class ProviderController : ControllerBase
     {
         return _providerManager.Disable(id);
     }
+
+    [HttpGet]
+    [Route("search-providers")]
+    public Task<List<Provider>> GetSearchProviders()
+    {
+        return _providerManager.GetSearchProviders(_httpClient);
+    }
 }

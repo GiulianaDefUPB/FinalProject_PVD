@@ -6,12 +6,13 @@ namespace UPB.CoreLogic.Managers;
 
 public class ProviderManager
 {
-
     private readonly string _path;
+    private readonly string _backingService;
 
-    public ProviderManager(string filePath)
+    public ProviderManager(string filePath, string backingService)
     {
         _path = filePath;
+        _backingService = backingService;
     }
 
     public Provider Enable(int id)
@@ -50,7 +51,7 @@ public class ProviderManager
     }
 
 
- public Provider? ReadProviderFromFile(int id)
+    private Provider? ReadProviderFromFile(int id)
     {
          ValidateIfFileExists();
 
@@ -68,7 +69,8 @@ public class ProviderManager
 
         return null;
     }
-     private void ValidateIfFileExists()
+
+    private void ValidateIfFileExists()
     {
          if (!File.Exists(_path))
         {
@@ -218,9 +220,9 @@ public class ProviderManager
         return updatedProvider;
     }
 
-    public void WriteProviderToFile(Provider provider)
+    private void WriteProviderToFile(Provider provider)
     {
-         ValidateIfFileExists();
+        ValidateIfFileExists();
 
         List<Provider>? providers = new List<Provider>();
         string json = File.ReadAllText(_path);
@@ -238,44 +240,53 @@ public class ProviderManager
         }
     }
 
-    public void DeleteProviderFromFile(int id)
+    private void DeleteProviderFromFile(int id)
     {
-        List<string> lst = File.ReadAllLines(_path).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToList();  
-        lst.RemoveAll(x => x.Split(',')[0].Equals(id.ToString()));  
-        File.WriteAllLines(_path, lst);
+        ValidateIfFileExists();
+
+        string json = File.ReadAllText(_path);
+        List<Provider>? providers = JsonSerializer.Deserialize<List<Provider>>(json);
+
+        if (providers != null)
+        {
+            providers.RemoveAll(provider => provider.ID == id);
+            json = JsonSerializer.Serialize(providers);
+            File.WriteAllText(_path, json);
+        }
     }
 
-    public Provider UpdateProviderToFile(int id, Provider providerToUpdate, Provider foundProvider)
+    private Provider UpdateProviderToFile(int id, Provider providerToUpdate, Provider foundProvider)
     {
-        List<string> lst = File.ReadAllLines(_path).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToList();  
-        int index = lst.FindIndex(x => x.Split(',')[0].Equals(id.ToString())); 
-        
-        List<String> patientData = new List<string>();
-        
-        foreach (PropertyInfo property in foundProvider.GetType().GetProperties())
+        string json = File.ReadAllText(_path);
+        List<Provider>? providers = JsonSerializer.Deserialize<List<Provider>>(json);
+
+        if (providers != null)
         {
-            patientData.Add(property.GetValue(foundProvider).ToString());
+            int index = providers.FindIndex(provider => provider.ID == id);
+
+            if (index != -1)
+            {
+                int remainingDays = (int)providerToUpdate.ContractExpirationDate.Subtract(DateTime.Today).TotalDays;
+                bool isExpired = remainingDays < 0;
+
+                foundProvider.Name = providerToUpdate.Name;
+                foundProvider.Address = providerToUpdate.Address;
+                foundProvider.Category = providerToUpdate.Category;
+                foundProvider.PhoneNumber = providerToUpdate.PhoneNumber;
+                foundProvider.ContractRemainingDays = remainingDays;
+                foundProvider.ContractExpirationDate = providerToUpdate.ContractExpirationDate;
+                foundProvider.ExpiredContract = isExpired;
+
+                providers[index] = foundProvider;
+                json = JsonSerializer.Serialize(providers);
+                File.WriteAllText(_path, json);
+            }
         }
-
-        int remainingDays = (int)providerToUpdate.ContractExpirationDate.Subtract(DateTime.Today).TotalDays;
-        bool isExpired = remainingDays < 0;
-
-        foundProvider.Name = providerToUpdate.Name;
-        foundProvider.Address = providerToUpdate.Address;
-        foundProvider.Category = providerToUpdate.Category;
-        foundProvider.PhoneNumber = providerToUpdate.PhoneNumber;
-        foundProvider.ContractRemainingDays = remainingDays;
-        foundProvider.ContractExpirationDate =  providerToUpdate.ContractExpirationDate;
-        foundProvider.ExpiredContract = isExpired;
-
-        string rawData = $"{foundProvider.ID},{foundProvider.Name},{foundProvider.Address},{foundProvider.Category},{foundProvider.PhoneNumber},{foundProvider.ContractRemainingDays},{foundProvider.ContractExpirationDate},{foundProvider.ExpiredContract},{foundProvider.Enable}";
-        lst[index] = rawData;
-        File.WriteAllLines(_path, lst);  
 
         return foundProvider;
     }
 
-    public int GenerateId ()
+    private int GenerateId ()
     {
         int newId = 1;
 
@@ -293,4 +304,35 @@ public class ProviderManager
         }
         return newId;
    }
+
+    public async Task<List<Provider>> GetSearchProviders(HttpClient httpProviders)
+    {
+        var response = await httpProviders.GetAsync(_backingService);
+
+        response.EnsureSuccessStatusCode();
+
+        string json = await response.Content.ReadAsStringAsync();
+
+        List<SearchProvider>? searchProviders = JsonSerializer.Deserialize<List<SearchProvider>>(json);
+        List<Provider> providers = new List<Provider>();
+
+        if (searchProviders != null)
+        {
+            foreach (SearchProvider sp in searchProviders)
+            {
+                Provider createdProvider = new Provider()
+                {
+                    ID = sp.id,
+                    Name = sp.business_name,
+                    Address = sp.full_address,
+                    PhoneNumber = sp.phone_number
+                };
+
+                providers.Add(createdProvider);
+            }
+
+        }
+       
+        return providers;
+    }
 }
