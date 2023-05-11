@@ -96,7 +96,7 @@ public class ProviderManager
                     Name = providerInfo[1],
                     Address = providerInfo[2],
                     Category = providerInfo[3],
-                    PhoneNumber = int.Parse(providerInfo[4]),
+                    PhoneNumber = providerInfo[4],
                     ContractRemainingDays = int.Parse(providerInfo[5]),
                     ContractExpirationDate = DateTime.Parse(providerInfo[6]),
                     ExpiredContract = Boolean.Parse(providerInfo[7]),
@@ -132,7 +132,7 @@ public class ProviderManager
         if (string.IsNullOrEmpty(providerToCreate.Name)
             || string.IsNullOrEmpty(providerToCreate.Address)
             || string.IsNullOrEmpty(providerToCreate.Category)
-            || providerToCreate.PhoneNumber <= 0
+            ||string.IsNullOrEmpty(providerToCreate.PhoneNumber)
             || providerToCreate.ContractExpirationDate == DateTime.MinValue)
         {
             throw new Exception("Invalid input parameters");
@@ -217,7 +217,7 @@ public class ProviderManager
                     Name = providerInfo[1],
                     Address = providerInfo[2],
                     Category = providerInfo[3],
-                    PhoneNumber = int.Parse(providerInfo[4]),
+                    PhoneNumber = providerInfo[4],
                     ContractRemainingDays = int.Parse(providerInfo[5]),
                     ContractExpirationDate = DateTime.Parse(providerInfo[6]),
                     ExpiredContract = Boolean.Parse(providerInfo[7]),
@@ -256,7 +256,7 @@ public class ProviderManager
         if (string.IsNullOrEmpty(providerToUpdate.Name)
             || string.IsNullOrEmpty(providerToUpdate.Address)
             || string.IsNullOrEmpty(providerToUpdate.Category)
-            || providerToUpdate.PhoneNumber <= 0
+            || string.IsNullOrEmpty(providerToUpdate.PhoneNumber)
             || providerToUpdate.ContractExpirationDate == DateTime.MinValue)
         {
             throw new Exception("Invalid input parameters");
@@ -346,14 +346,26 @@ public class ProviderManager
 
         string json = await response.Content.ReadAsStringAsync();
 
-        List<SearchProviders> searchProviders = JsonSerializer.Deserialize<List<SearchProviders>>(json);
+        List<SearchProvider>? searchProviders = JsonSerializer.Deserialize<List<SearchProvider>>(json);
         List<Provider> providers = new List<Provider>();
 
-        foreach (SearchProviders sp in searchProviders)
+        if (searchProviders != null)
         {
-            providers.Add(new Provider(sp.name,"", sp.address, "", sp.phone_number,""));
-        }
+            foreach (SearchProvider sp in searchProviders)
+            {
+                Provider createdProvider = new Provider()
+                {
+                    ID = sp.id,
+                    Name = sp.business_name,
+                    Address = sp.full_address,
+                    PhoneNumber = sp.phone_number
+                };
 
+                providers.Add(createdProvider);
+            }
+
+        }
+       
         return providers;
     }
 }
