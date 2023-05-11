@@ -1,4 +1,5 @@
 using Microsoft.OpenApi.Models;
+using FinalProjectPVD.Middlewares;
 using serilog;
 
 var builder = WebApplication.CreateBuilder(args);
